@@ -1,0 +1,89 @@
+package com.grupo34.Teapoio.resource;
+
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.grupo34.Teapoio.domain.Postagem;
+import com.grupo34.Teapoio.domain.Usuario;
+import com.grupo34.Teapoio.dto.PostagemDTO;
+import com.grupo34.Teapoio.dto.UsuarioDTO;
+import com.grupo34.Teapoio.dto.UsuarioNewDTO;
+import com.grupo34.Teapoio.repository.UsuarioRepository;
+import com.grupo34.Teapoio.services.UsuarioService;
+
+
+@RestController
+@RequestMapping(value = "/user")
+public class UsuarioResource {
+
+	@Autowired
+	private UsuarioService service;
+
+	@Autowired
+	private UsuarioRepository repository;
+
+	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
+	public ResponseEntity<Usuario> GetById(@PathVariable int id) {
+		return repository.findById(id).map(resp -> ResponseEntity.ok(resp)).orElse(ResponseEntity.notFound().build());
+	}
+
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<List<UsuarioDTO>> findAll() {
+		List<Usuario> list = service.findAll();
+		List<UsuarioDTO> listDto = list.stream().map(obj -> new UsuarioDTO(obj)).collect(Collectors.toList());
+		return ResponseEntity.ok().body(listDto);
+	}
+
+	@RequestMapping(value = "/email", method = RequestMethod.GET)
+	public ResponseEntity<UsuarioDTO> find(@RequestParam(value = "value") String email) {
+		Usuario obj = service.findByEmail(email);
+		return ResponseEntity.ok().body(new UsuarioDTO(obj));
+	}
+
+	@RequestMapping(value = "/create", method = RequestMethod.POST)
+	public ResponseEntity<Void> insert(@Valid @RequestBody UsuarioNewDTO objDto) {
+		Usuario obj = service.fromDTO(objDto);
+		obj = service.insert(obj);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
+		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	@RequestMapping(value = "/update/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Void> update(@Valid @RequestBody UsuarioDTO objDto, @PathVariable Integer id) {
+		Usuario obj = service.fromDTO(objDto);
+		obj.setId(id);
+		obj = service.update(obj);
+		return ResponseEntity.noContent().build();
+	}
+
+	@PreAuthorize("hasAnyRole('ADMIN')")
+	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+	public ResponseEntity<Void> delete(@PathVariable Integer id)  {
+		service.delete(id);
+		return ResponseEntity.noContent().build();
+	}
+
+	@RequestMapping(value = "/picture", method = RequestMethod.POST)
+	public ResponseEntity<Void> uploadProfilePicture(@RequestParam(name = "file") MultipartFile file) {
+		URI uri = service.uploadProfilePicture(file);
+		return ResponseEntity.created(uri).build();
+	}
+
+}
