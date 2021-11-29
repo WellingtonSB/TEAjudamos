@@ -67,7 +67,7 @@ As seguintes ferramentas foram usadas na construção do projeto:
 
 ## 🦸 Autor
 <p align="center">
-  <a href="https://github.com/WellingtonSB">
+  <a href="https://wellingtonsb.github.io/Wellington_Bezerra/">
   <img style="border-radius: 50%;" src="https://i.imgur.com/J5eSkPh.jpg" width="100px;" alt=""/>
   <br />
   <sub><b>Wellington Bezerra</b></sub></a> <a href="https://wellingtonsb.github.io/Wellington_Bezerra/" title="Portifolio">🚀</a>
